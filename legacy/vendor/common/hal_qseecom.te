@@ -1,4 +1,4 @@
-# Copyright (c) 2018-2019, The Linux Foundation. All rights reserved.
+# Copyright (c) 2019, The Linux Foundation. All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are
@@ -13,7 +13,7 @@
 #       contributors may be used to endorse or promote products derived
 #       from this software without specific prior written permission.
 #
-# THIS SOFTWARE IS PROVIDED"AS IS" AND ANY EXPRESS OR IMPLIED
+# THIS SOFTWARE IS PROVIDED "AS IS" AND ANY EXPRESS OR IMPLIED
 # WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
 # MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NON-INFRINGEMENT
 # ARE DISCLAIMED.  IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS
@@ -25,27 +25,28 @@
 # OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN
 # IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-allow qti_init_shell sysfs_npu:file rw_file_perms;
-set_prop(qti_init_shell, vendor_mdm_helper_prop)
-set_prop(qti_init_shell, vendor_mmi_prop)
+#define the domain
+type hal_qseecom_default, domain;
+hal_server_domain(hal_qseecom_default, hal_qseecom)
+type hal_qseecom_default_exec, exec_type, file_type, vendor_file_type;
 
-set_prop(qti_init_shell, vendor_video_prop)
+init_daemon_domain(hal_qseecom_default)
 
-set_prop(qti_init_shell, vendor_dataadpl_prop)
+#Allow hal_qseecom client domain apps to find hwservice
+binder_call(hal_qseecom_client, hal_qseecom_server)
+binder_call(hal_qseecom_server, hal_qseecom_client)
 
-#perf
-set_prop(qti_init_shell, vendor_mpctl_prop)
+#allow the service to be added to hwservice list
+hal_attribute_hwservice(hal_qseecom, hal_qseecom_hwservice)
 
-# hvdcp_opti property
-set_prop(qti_init_shell, vendor_hvdcp_opti_prop)
+#allow access to hal_allocator
+hal_client_domain(hal_qseecom_default, hal_allocator)
 
-# To write to /data/vendor/perfd
-allow qti_init_shell mpctl_data_file:dir w_dir_perms;
-allow qti_init_shell mpctl_data_file:file { write getattr unlink };
-allow qti_init_shell sysfs_vmpressure:file w_file_perms;
+#allow access to ion device
+allow hal_qseecom_default ion_device:chr_file rw_file_perms;
 
-userdebug_or_eng(`
-# Needed for starting console in userdebug mode
-set_prop(qti_init_shell, vendor_audio_debug_prop)
-set_prop(qti_init_shell, vendor_coresight_prop)
-')
+#Allow access to firmware
+r_dir_file(hal_qseecom_default, firmware_file);
+
+#Allow access to tee device
+allow hal_qseecom_default tee_device:chr_file rw_file_perms;
