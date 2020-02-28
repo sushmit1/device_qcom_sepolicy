@@ -13,7 +13,7 @@
 #       contributors may be used to endorse or promote products derived
 #       from this software without specific prior written permission.
 #
-# THIS SOFTWARE IS PROVIDED"AS IS" AND ANY EXPRESS OR IMPLIED
+# THIS SOFTWARE IS PROVIDED "AS IS" AND ANY EXPRESS OR IMPLIED
 # WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
 # MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NON-INFRINGEMENT
 # ARE DISCLAIMED.  IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS
@@ -25,8 +25,26 @@
 # OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN
 # IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-/(vendor|system/vendor)/bin/hw/android\.hardware\.biometrics\.face@1\.0-service    u:object_r:vendor_biometricsface_exec:s0
+# qva/private/location_app_test.te - sepolicy rules for qti value added
+# location apps (internal) that will be part of system image. eg: ODLT, Qlogcat
 
-/data/vendor/face3d_dir(/.*)?                                       u:object_r:vendor_biometricsface_data_file:s0
+type dualsta_app, domain;
+app_domain(dualsta_app)
 
-/vendor/bin/embmsslServer       u:object_r:hal_embmssl_qti_exec:s0
+userdebug_or_eng(`
+  binder_call(cnd,dualsta_app)
+  binder_call(dualsta_app,cnd)
+  allow dualsta_app hal_datafactory_hwservice:hwservice_manager find;
+  allow dualsta_app activity_service:service_manager find;
+  allow dualsta_app activity_task_service:service_manager find;
+  allow dualsta_app audio_service:service_manager find;
+  allow dualsta_app autofill_service:service_manager find;
+  allow dualsta_app cgroup:file write;
+  allow dualsta_app gpu_service:service_manager find;
+  allow dualsta_app gpuservice:binder call;
+  allow dualsta_app surfaceflinger_service:service_manager find;
+  allow dualsta_app system_app_data_file:dir { add_name getattr remove_name search write };
+  allow dualsta_app system_app_data_file:file { create getattr map open read setattr unlink write };
+  allow dualsta_app textservices_service:service_manager find;
+')
+
